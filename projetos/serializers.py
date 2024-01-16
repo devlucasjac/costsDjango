@@ -11,6 +11,29 @@ class CategoriaSerializer(serializers.ModelSerializer):
             "nome"
         ]
 
+class ProjetoSerializer(serializers.ModelSerializer):    
+    
+    class Meta:
+        model = Projeto
+        fields = [
+            "id",
+            "nome",
+            "orçamento",
+            "categoria"            
+        ]
+
+class ProjetoListSerializer(serializers.ModelSerializer):
+    categoria = CategoriaSerializer()
+    
+    class Meta:
+        model = Projeto
+        fields = [
+            "id",
+            "nome",
+            "orçamento",
+            "categoria"            
+        ]    
+
 class ServiçoSerializer(serializers.ModelSerializer):
     #projetos = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     
@@ -20,18 +43,6 @@ class ServiçoSerializer(serializers.ModelSerializer):
             "id",
             "nome",
             "custo",
-            "descrição"
-        ]
-
-class ProjetoSerializer(serializers.ModelSerializer):
-    
-    
-    class Meta:
-        model = Projeto
-        fields = [
-            "id",
-            "nome",
-            "orçamento",
-            "categoria",
-            "serviço"
+            "descrição",
+            "projeto"
         ]

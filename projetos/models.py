@@ -18,30 +18,30 @@ class  Categoria(Base):
 
     def __str__(self):
         return self.nome
-
-class Serviço(Base):
-    nome = models.CharField(max_length=255)
-    custo = models.FloatField()
-    descrição = models.TextField(blank=True, default="")
-
-    class Meta:
-        verbose_name = "serviço"
-        verbose_name_plural = "serviços"
-    def __str__(self):
-        return f'{self.nome} tem o custo de {self.custo} e se trata de{self.descrição}'    
-
+  
 class Projeto(Base):
     nome = models.CharField(max_length=255)
     orçamento = models.FloatField()
-    categoria = models.ForeignKey(Categoria,related_name="projetos",on_delete=models.CASCADE)
-    serviço = models.ForeignKey(Serviço, related_name="projetos",on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria,related_name="projetos",on_delete=models.CASCADE)    
 
     class Meta:
         verbose_name = "projeto"
         verbose_name_plural = "projetos"
     
     def __str__(self):
-        return f'o projeto {self.nome} tem o orçamento de {self.orçamento} e pertence a categoria {self.categoria} e ao serviço {self.serviço}'
+        return f'o projeto {self.nome} tem o orçamento de {self.orçamento} e pertence a categoria {self.categoria}'
 
+
+class Serviço(Base):
+    nome = models.CharField(max_length=255)
+    custo = models.FloatField()
+    descrição = models.TextField(blank=True, default="")
+    projeto = models.ForeignKey(Projeto,related_name="serviços",on_delete=models.CASCADE,blank=True,default=0)
+
+    class Meta:
+        verbose_name = "serviço"
+        verbose_name_plural = "serviços"
+    def __str__(self):
+        return f'{self.nome} tem o custo de {self.custo} e se trata de{self.descrição}' 
 
     
