@@ -1,11 +1,18 @@
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
+from rest_framework import status
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from .models import Categoria, Serviço, Projeto
 from .serializers import CategoriaSerializer,ServiçoSerializer,ProjetoSerializer,ProjetoListSerializer
 # Create your views here.
 
+def calculoCusto(lista): 
+    custo=0
+    if lista is not None:
+       for item in lista:
+           custo += item.custo  
+    return custo
 
 class CategoriaViewset(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
@@ -19,16 +26,26 @@ class ProjetoViewset(viewsets.ModelViewSet):
     queryset = Projeto.objects.all()
     serializer_class = ProjetoSerializer
 
+    def update(self,request,pk=None):
+        queryset = Projeto.objects.all()
+        projeto = get_object_or_404(queryset, pk=pk)
+        serializer = ProjetoSerializer(projeto,data=request.data)  
+        serviços = Serviço.objects.filter(projeto_id=pk)
+        custo = calculoCusto(serviços)        
+        orçamento = float(request.data["orçamento"])
+        if custo < orçamento:                   
+            if serializer.is_valid():                
+                serializer.save()
+                return Response(serializer.data)            
+        return Response("Não é possivel criar um projeto com um orçamento menor que o custo",status=status.HTTP_400_BAD_REQUEST)
+
     def retrieve(self, request, pk=None):
         queryset = Projeto.objects.all()
         projeto = get_object_or_404(queryset, pk=pk)
         serializer = ProjetoListSerializer(projeto)  
         serviços = Serviço.objects.filter(projeto_id=pk)
-        custo = 0
-        if serviços is not None:
-            for serviço in serviços:
-                custo += serviço.custo        
-
+       
+        custo=calculoCusto(serviços)
         retrieveProject ={
             "id": serializer.data['id'],
             "nome": serializer.data['nome'],
