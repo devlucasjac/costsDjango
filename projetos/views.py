@@ -22,30 +22,54 @@ class ServiçoViewset(viewsets.ModelViewSet):
     queryset = Serviço.objects.all()
     serializer_class = ServiçoSerializer
 
+    def create(self,request):
+        project_id = request.data["projeto"]
+        queryset = Projeto.objects.all()
+        projeto = get_object_or_404(queryset, pk=project_id)
+
+        orçamento = projeto.orçamento
+
+        serviços = Serviço.objects.filter(projeto_id=project_id)
+        custo_total = calculoCusto(serviços) + request.data["custo"]
+
+        serializer = ServiçoSerializer(data=request.data)
+       
+        if custo_total < orçamento and serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response("O custo total dos serviços não deve exceder o orçamento do projeto",status=status.HTTP_400_BAD_REQUEST)
+
 class ProjetoViewset(viewsets.ModelViewSet):
     queryset = Projeto.objects.all()
     serializer_class = ProjetoSerializer
 
     def update(self,request,pk=None):
         queryset = Projeto.objects.all()
-        projeto = get_object_or_404(queryset, pk=pk)
+        projeto = get_object_or_404(queryset, pk=pk)        
         serializer = ProjetoSerializer(projeto,data=request.data)  
+
         serviços = Serviço.objects.filter(projeto_id=pk)
         custo = calculoCusto(serviços)        
+
         orçamento = float(request.data["orçamento"])
+
         if custo < orçamento:                   
             if serializer.is_valid():                
                 serializer.save()
-                return Response(serializer.data)            
+                return Response(serializer.data)   
+                         
         return Response("Não é possivel criar um projeto com um orçamento menor que o custo",status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         queryset = Projeto.objects.all()
         projeto = get_object_or_404(queryset, pk=pk)
-        serializer = ProjetoListSerializer(projeto)  
+        serializer = ProjetoListSerializer(projeto) 
+
         serviços = Serviço.objects.filter(projeto_id=pk)
        
         custo=calculoCusto(serviços)
+
         retrieveProject ={
             "id": serializer.data['id'],
             "nome": serializer.data['nome'],
@@ -53,6 +77,7 @@ class ProjetoViewset(viewsets.ModelViewSet):
             "categoria":serializer.data['categoria'],
             "custo":custo
         }       
+
         return Response(retrieveProject)
 
     def list(self,request):
