@@ -20,7 +20,7 @@ class CategoriaViewset(viewsets.ModelViewSet):
 
 class ServiçoViewset(viewsets.ModelViewSet):
     queryset = Serviço.objects.all()
-    serializer_class = ServiçoSerializer
+    serializer_class = ServiçoSerializer  
 
     def create(self,request):
         project_id = request.data["projeto"]
@@ -30,7 +30,7 @@ class ServiçoViewset(viewsets.ModelViewSet):
         orçamento = projeto.orçamento
 
         serviços = Serviço.objects.filter(projeto_id=project_id)
-        custo_total = calculoCusto(serviços) + request.data["custo"]
+        custo_total = calculoCusto(serviços) + float(request.data["custo"])
 
         serializer = ServiçoSerializer(data=request.data)
        
@@ -43,6 +43,12 @@ class ServiçoViewset(viewsets.ModelViewSet):
 class ProjetoViewset(viewsets.ModelViewSet):
     queryset = Projeto.objects.all()
     serializer_class = ProjetoSerializer
+
+    @action(detail=True,methods=["GET"])
+    def serviços(self,request,pk=None):
+        serviços = Serviço.objects.filter(projeto_id=pk)
+        serializer = ServiçoSerializer(serviços,many="True")       
+        return Response(serializer.data)
 
     def update(self,request,pk=None):
         queryset = Projeto.objects.all()
