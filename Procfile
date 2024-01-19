@@ -1,0 +1,1 @@
+web: gunicorn costs_django.wsgi

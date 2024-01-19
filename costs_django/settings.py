@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import django_heroku
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-%*o&=bejxsgq9%*s-l2$5-ro$etwy0h#xu3^80ty0a&!iz&25f"
@@ -99,6 +101,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+"""Configurações para deploy no heroku Obs:é nescessario que gunicorn esteja em requirements, 
+tambem é nescessaria a criação do Procfile"""
+django_heroku.settings(locals())
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
